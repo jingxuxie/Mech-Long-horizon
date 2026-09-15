@@ -1,0 +1,52 @@
+\appendix
+\section{Reproduction and audit ledger}
+The code is organized as follows: \texttt{src/horizon/positive.py} implements support certificates, witnesses and word enumeration; \texttt{finite.py} implements exact state-pair auditing; the \texttt{experiments} directory runs exact, perturbation, trained, and same-cardinality studies. Raw CSVs and JSON records are stored under \texttt{results}. JSON weight arrays avoid executable pickle checkpoints. Figure generation reads the raw results rather than manually entered numbers.
+
+From the repository root:
+\begin{verbatim}
+python -m pip install -e '.[experiments]'
+pytest -q
+python experiments/exact.py
+python experiments/fragility.py
+python experiments/trained_rnn.py --seeds 10 --steps 1000
+python experiments/matched_size.py
+python experiments/plots.py
+cd paper
+pdflatex -interaction=nonstopmode main.tex
+bibtex main  # or: bibtex8 main
+pdflatex -interaction=nonstopmode main.tex
+pdflatex -interaction=nonstopmode main.tex
+\end{verbatim}
+The measured environment used Python 3.13.5, NumPy 2.3.5 and PyTorch 2.10.0+cpu, with one PyTorch thread. The ten-seed training and primary evaluation run took about 15.1 seconds in the provided execution environment; the exact random and curve enumeration run took about 1.2 seconds. These are environment-specific measurements, not laptop runtime promises, and exclude installation, imports, literature review, and writing. The full source archive includes execution metadata and all ten learned checkpoints. Exact integer and rational tests should be deterministic across compatible Python versions; floating-point training can differ across backends.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{p{.24\linewidth}p{.33\linewidth}p{.32\linewidth}}
+\toprule
+Claim & Evidence in this version & Not established \\
+\midrule
+Nonnegative exact minimum & Path-expansion proof; 12,192 exhaustive mask--horizon checks & General signed/nonlinear minimum \\
+Shortest failure witness & Product-graph proof; independent witness replay & Black-box query optimality \\
+Signed robust obstruction & Polynomial and finite-difference proofs; 12 rational checks & Tight typical-noise sensitivity \\
+Trained temporal failure & Ten fixed seeds and independent test streams & Universal certification; broad task generality \\
+Longer-window selection & Same-size controls plus raw evaluation costs & Matched-compute superiority over published methods \\
+\bottomrule
+\end{tabular}
+\caption{The evidence status of the main claims.}
+\end{table}
+
+\section{Algorithmic details and edge cases}
+\paragraph{Earliest witnesses.} A failure at time zero is possible when an omitted initial source contributes directly to the readout; the validity horizon is then $-1$. An infinite birth means that no allowed source-to-output walk visits that coordinate. A path may revisit a protocol state or coordinate; both searches are shortest-path searches in the finite product graph, and concatenation is legal at the shared vertex. Repeated state coordinates do not increase mask cardinality more than once.
+
+\paragraph{Nonnegative amplitudes.} Under Equations~\eqref{eq:system}--\eqref{eq:mask}, write the output difference at a fixed word as $D_w\xi$. Path expansion gives $D_w\ge0$. Every coordinate of $D_w\xi$ is maximized at $\xi=\one$, so the same corner maximizes the infinity norm. This is why the integer oracle needs only one box corner per word. The statement does not hold for arbitrary signed systems, for which another input optimization is required.
+
+\paragraph{Persistent versus refreshed masks.} A refreshed test would initialize $z_t=P_Kx_t$ again before every tested transition. Its future computations can receive information that the persistent mask already lost. The code never performs this refresh. Similarly, a single temporary ablation followed by full-network dynamics is a different intervention from the persistent mask studied here.
+
+\paragraph{Finite-state closure.} The generic auditor uses tuple-valued exact states and equality of outputs. When all reachable pairs have been checked and their successors have been seen, they form a transition-closed relation with equal outputs. A finite-depth cutoff proves only the requested horizon unless the reachable graph has already closed. Budget exhaustion does not justify any unreported extrapolation. Continuous-state numeric recurrence must not be passed off as a finite-state closure certificate merely because two floating-point states happen to coincide.
+
+\paragraph{Protocol interventions.} The finite intervention-shift control is affine and is audited directly as a finite system; it is not claimed to instantiate the homogeneous signed-parameter theorem. Linear gated transitions are within the support theorem. Extending the parameter-robust quantitative theorem to affine modes or constrained parameter ties requires tracking which coefficients are independently variable and the resulting polynomial degrees.
+
+\section{Interpretation of uncertainty and remaining checks}
+This manuscript was developed with an AI assistant that derived the proofs, wrote and executed the code, and drafted the text. All reported experiments were executed; no prospective outcomes are described as observations. Computational checks support implementation consistency but do not replace independent theorem review. Any eventual submission should update authorship, disclosure, formatting and venue-specific requirements as appropriate.
+
+The principal unresolved research question is not whether delayed effects exist, but whether a useful approximate analogue of the exact characterization can be proved and evaluated on learned mechanisms. The current positive-class theorem and robust signed obstruction can serve as ground truth for that development. A revision should also distinguish architectural necessity from semantic importance: a coordinate needed as a relay under a fixed zero mask need not correspond to a human-interpretable concept.

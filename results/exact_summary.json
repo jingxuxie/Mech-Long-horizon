@@ -1,0 +1,11 @@
+{
+  "random_systems": 60,
+  "random_masks_checked": 2976,
+  "random_support_disagreements": 0,
+  "random_shortest_witness_disagreements": 0,
+  "curve_mask_checks": 9216,
+  "elapsed_seconds": 1.2302539099999876,
+  "python": "3.13.5",
+  "numpy": "2.3.5",
+  "arithmetic": "Python arbitrary-precision integers; Boolean support"
+}

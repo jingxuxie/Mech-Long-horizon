@@ -1,0 +1,19 @@
+system,n,horizon,minimum,predicted,keep
+delay,10,0,0,0,
+delay,10,1,2,2,0 1
+delay,10,2,5,5,0 1 2 3 4
+delay,10,3,9,9,0 1 2 3 4 5 6 7 8
+delay,10,4,9,9,0 1 2 3 4 5 6 7 8
+delay,10,5,9,9,0 1 2 3 4 5 6 7 8
+gated_free,8,0,0,0,
+gated_free,8,1,0,0,
+gated_free,8,2,3,3,4 5 6
+gated_free,8,3,7,7,0 1 2 3 4 5 6
+gated_free,8,4,7,7,0 1 2 3 4 5 6
+gated_free,8,5,7,7,0 1 2 3 4 5 6
+gated_no11,8,0,0,0,
+gated_no11,8,1,0,0,
+gated_no11,8,2,0,0,
+gated_no11,8,3,4,4,0 1 2 3
+gated_no11,8,4,4,4,0 1 2 3
+gated_no11,8,5,4,4,0 1 2 3

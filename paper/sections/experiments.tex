@@ -1,0 +1,60 @@
+\section{Reference auditing beyond the positive class}
+For an arbitrary finite deterministic transition system and a fixed persistent mask, we provide a breadth-first search over pairs $(x,z)$, initialized from all declared initial states. Each pair is checked for output equality; successors apply the same action and then mask the reduced state. A previously seen pair need not be revisited because its first occurrence has minimum depth and therefore the largest remaining horizon. With protocol constraints, the protocol memory must be included as unmasked state in the pair.
+
+This auditor returns a shortest failure word, a requested finite-horizon certificate, an all-horizon closure certificate, or \emph{unresolved} upon budget exhaustion. Absence of a sampled counterexample is never labeled certified. For a system with $N$ reachable original states and $\hat N$ reduced states, the worst-case pair space has $N\hat N$ elements. This is a reference instrument, not a proposed general scalable verifier.
+
+\begin{proposition}[Transition closure, standard]\label{prop:closure}
+Suppose a relation between original and reduced states contains all admissible initial pairs, implies output discrepancy at most $\eps$, and is preserved under every allowed matched transition. Then the explanation is faithful to tolerance $\eps$ at every finite horizon.
+\end{proposition}
+\begin{proof}
+Induction keeps the paired trajectory inside the relation at every time. The output condition then applies to every prefix.
+\end{proof}
+This is the standard simulation-relation mechanism \citep{girard2011}. Exact local equivalence on every reachable intervened state \emph{does} compose. The failure cases concern insufficient testing, insufficient retained state, or an explanation transition rule that does not preserve the relation.
+
+\section{Experiments}
+\subsection{Exact systems and implementation cross-checks}
+We tested 60 random nonnegative switched systems, with $n=3,\ldots,7$, two integer-valued transition matrices, two readouts, one source, and horizons between two and five. Each matrix entry is an independent Bernoulli variable with probability $0.25$; readout entries use probability $0.3$. Even seeds use the no-consecutive-ones protocol and odd seeds unrestricted switching. We enumerate every mask and every allowed word, using Python arbitrary-precision integer arithmetic. In 2,976 mask tests, both support-based faithfulness and predicted first-failure times agree with arithmetic enumeration, with zero disagreements. Returned witnesses were independently replayed on their specified source basis states.
+
+An additional 9,216 mask--horizon tests enumerate delay and gated examples in Figure~\ref{fig:horizon}; support minima match exhaustive minima throughout. These finite checks validate the implementation, not the universal mathematical theorem. The random instances can contain trivial or irrelevant components; none were filtered out to make the result more favorable.
+
+A separate finite-state control starts at $(0,0,0)$ with ordinary transition $(m,r,o)\mapsto(m,m,r)$. The empty mask is faithful forever under ordinary transitions. Adding the intervention $(m,r,o)\mapsto(1,r,o)$ yields the shortest failure sequence \texttt{set,tick,tick}, at time three. A full mask is certified under the expanded scope. A one-pair budget returns unresolved rather than a false certificate. The signed cancellation example from Section~5 gives an additional negative control.
+
+\subsection{Rare allowed continuations}
+A gated chain of length $L$ transmits its source only for one prescribed binary word. Its empty mask agrees at every earlier time and fails on that word. With $B$ independent uniform length-$L$ test words, the exact probability of missing failure is
+\begin{equation}
+ (1-2^{-L})^B.
+\end{equation}
+We use $B=256$, $L\in\{4,8,12,16\}$ and 2,000 repeated audits per length. The simulation follows the analytic probability (Figure~\ref{fig:rare}). For $L=16$, the miss probability is about $0.9961$. The support auditor reconstructs the length-$L$ word directly. This is a comparison of unstructured sampling with white-box graph access, \emph{not} a claim that the two procedures have identical information access or that all sequential tasks have exponentially rare failures.
+
+\begin{figure}[t]
+\centering\includegraphics[width=.77\linewidth]{figures/rare.pdf}
+\caption{Random tests can miss a rare permitted continuation. Points are empirical miss frequencies, with 95\% Wilson binomial confidence intervals; the line is the exact probability. The structural auditor uses additional white-box information.}
+\label{fig:rare}
+\end{figure}
+
+\subsection{Rational perturbation checks}
+The finite-radius proof is tested on twelve rational-arithmetic cases, with transition lengths one through six and radii $1/10$ and $1/4$. The selected path reuses a recurrent self-loop, so some exponents $\alpha_j$ exceed one. For each case, we evaluate the full mixed-difference grid with exact fractions. The resulting difference equals its predicted coefficient and factorial expression, and the grid maximum exceeds both bounds in Equation~\eqref{eq:radius}, with zero violations. An additional 5,000 floating-point draws include the nominal signed cancellation and four nonzero perturbation radii. These draws illustrate, but do not prove, the genericity claim.
+
+\subsection{Trained signed recurrent models}
+We train ten independently initialized 16-unit tanh RNNs on a delayed-query memory task. A signed bit arrives at the first step; a later query requires outputting it; other targets are zero. Training uses 1,000 Adam steps, batch size 64, learning rate $0.008$, gradient clipping at one, sequences of length 20, and query indices sampled uniformly from 4 through 16. Query-step squared error receives weight ten and other steps weight one. There is no intervention supervision during training.
+
+Mask selection uses a separate pseudorandom stream, 64 sequences of length 25, and query indices 8 through 24. A greedy procedure tests single-coordinate deletions and accepts the best currently allowed deletion while the maximum output difference stays at most $0.1$. Short-window selection uses the first four outputs; long-window selection uses all 25. Every mask is executed persistently using its own hidden state. The procedure is only locally greedy and does not claim global optimality for signed networks.
+
+Evaluation uses another independent stream, 256 length-33 sequences per seed, and query indices 8 through 32. All ten original models have 100\% query-sign accuracy on these finite tests; this is distinct from circuit faithfulness. Six of the ten short-window masks exceed the selection tolerance at later held-out steps, compared with zero of the long-window masks. Mean retained sizes are 14.3 and 15.4, respectively. Median maximum held-out output discrepancies are 0.260 and 0.063. One short-window circuit reaches discrepancy 1.888. Four short-window selections do not fail, and all seed-level results are retained.
+
+\begin{figure}[t]
+\centering\includegraphics[width=.79\linewidth]{figures/rnn.pdf}
+\caption{Held-out temporal discrepancy in ten trained signed RNNs. Curves show the median per-seed maximum over test sequences and prefix times; bars span the interquartile range across seeds, not confidence bounds or certificates. Longer-window selection uses more temporal information and on average retains more units.}
+\label{fig:rnn}
+\end{figure}
+
+\paragraph{Same-cardinality control.} To separate window length from retained size, we also continue greedy deletion to fixed sizes, irrespective of the tolerance, and compare with 50 uniformly random masks at each size. At 12 retained units, median held-out maximum error is 1.444 for short-window selection, 0.307 for long-window selection and 1.100 for the per-seed median random mask. Long-window selection improves on short-window selection in all ten seeds at this size. At 14 units, corresponding medians are 0.600, 0.183, and 0.628, with seven strict improvements and three ties in measured error. The longer criterion also costs more transition evaluations; these controls are matched in size, not in compute or information access.
+
+\begin{figure}[t]
+\centering\includegraphics[width=.79\linewidth]{figures/matched.pdf}
+\caption{Same-cardinality control: every circuit retains 14 of 16 units. Each box summarizes ten seeds. The random baseline contributes the median error over 50 random masks per seed; it is not selected using the test data. The comparison removes the retained-size confound, but does not match selection compute.}
+\label{fig:matched}
+\end{figure}
+
+\paragraph{Interpretation.} The trained results show that temporal mask failures survive learning in this task. They do not validate the positive support theorem on signed nonlinear dynamics, certify unseen sequences, or show superiority to published recurrent circuit-discovery methods. No Jacobian-based baseline or independent replication of the windowed-intervention method of \citet{balwani} is included in this version.
+

@@ -1,0 +1,65 @@
+{
+  "natural": {
+    "status": "certified_all",
+    "horizon": null,
+    "pairs": 1,
+    "transitions": 1
+  },
+  "intervened": {
+    "status": "falsified",
+    "time": 3,
+    "word": [
+      "set",
+      "tick",
+      "tick"
+    ],
+    "original": [
+      1,
+      1,
+      1
+    ],
+    "reduced": [
+      0,
+      0,
+      0
+    ],
+    "pairs": 4,
+    "transitions": 6
+  },
+  "intervened_full": {
+    "status": "certified_all",
+    "horizon": null,
+    "pairs": 4,
+    "transitions": 8
+  },
+  "budget_exhausted": {
+    "status": "unresolved",
+    "pairs": 1,
+    "transitions": 2
+  },
+  "signed_empty": {
+    "status": "certified_all",
+    "horizon": null,
+    "pairs": 3,
+    "transitions": 3
+  },
+  "signed_partial": {
+    "status": "falsified",
+    "time": 1,
+    "word": [
+      0
+    ],
+    "original": [
+      0,
+      1,
+      1
+    ],
+    "reduced": [
+      0,
+      1,
+      0
+    ],
+    "pairs": 2,
+    "transitions": 1
+  }
+}

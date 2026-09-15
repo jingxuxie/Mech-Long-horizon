@@ -1,0 +1,48 @@
+\section{Signed cancellations and parameter-robust faithfulness}
+At fixed signed weights, Theorem~\ref{thm:support} is false in general. For example, initialize $(s,p,q)=(b,0,0)$, transition to $(0,s,s)$, and read out $p-q$. Every original output is zero. The empty mask is faithful, but retaining only $s$ and $p$ produces a nonzero output at time one. Adding components can therefore break faithfulness.
+
+Now fix the structural zero pattern and assign an independent real parameter to every allowed nonzero entry of every $A_a$ and of $C$. An entry reused at different timesteps is the \emph{same} parameter. Different entries are not tied together. Let $\theta$ collect these parameters, and use the support graph of the allowed entries, irrespective of their signs. Both the original and its mask receive the same perturbed parameters. Define
+\begin{equation}
+ \risk_{H,\rho}^{\mathrm{rob}}(K;\theta)
+ =\sup_{\|\Delta\|_\infty\le\rho}\risk_H(K;\theta+\Delta).
+ \label{eq:robust}
+\end{equation}
+Structural zeros remain zero. Taking $\rho<\min_j|\theta_j|$ preserves all nominal signs if desired.
+
+\begin{theorem}[Robust exact masks and generic signed masks]\label{thm:generic}
+For any positive-radius parameter box, robust exact faithfulness through $H$ holds if and only if $\live_H\subseteq K$. For almost every parameter vector with respect to Lebesgue measure, all exact faithful masks through a fixed $H$ are precisely the supersets of $\live_H$.
+\end{theorem}
+\begin{proof}
+If $K$ contains $\live_H$, all source-to-output walks of length at most $H$ survive, so the original and reduced output polynomials are identical for all parameters, including signed ones.
+
+Otherwise choose a lost walk, its source, output, and word of length $t\le H$. The scalar output difference $p(\theta)$ is the sum of monomials for all lost walks with that source, output and word. Before parameter values are substituted, each monomial has a positive integer coefficient counting lost walks. The selected walk guarantees that $p$ is not the zero polynomial. A nonzero real polynomial cannot vanish on an open box and its zero set has Lebesgue measure zero. This proves the robust claim. Choose one such polynomial for each nonfaithful support mask. There are finitely many masks; the union of their zero sets is still null, proving the simultaneous generic claim.
+\end{proof}
+The polynomial reasoning is related to established structural-system arguments \citep{zhang2021}; it does not establish a new general principle of genericity. Here it identifies exactly when a persistent temporal mask depends on a cancellation. The independent-parameter assumption is important: symmetry constraints tying different edges or fixed opposing readouts can preserve cancellations identically. Nor does an exact measure-zero result imply practical sensitivity at a finite error tolerance.
+
+\begin{theorem}[A finite-radius obstruction]\label{thm:radius}
+Suppose $K$ omits a component on an allowed source-to-output walk of length $t\le H$. In the signed parameterization above, let $\alpha$ be the vector of multiplicities of transition and readout parameters on that walk, and set $d=\sum_j\alpha_j=t+1$. For every center $\theta$ and radius $\rho>0$,
+\begin{equation}
+ \risk_{H,\rho}^{\mathrm{rob}}(K;\theta)
+ \ \ge\ \rho^d\prod_{j:\alpha_j>0}\frac{\alpha_j!}{\alpha_j^{\alpha_j}}
+ \ \ge\ \frac{d!}{d^d}\rho^d.
+ \label{eq:radius}
+\end{equation}
+If each path parameter occurs only once, the first lower bound is $\rho^d$.
+\end{theorem}
+\begin{proof}
+Fix the source, output and word of the selected walk. Its lost-output polynomial $p$ is homogeneous of degree $d$ and contains the monomial $\theta^\alpha$ with coefficient $c_\alpha\ge1$, even if its value at the nominal parameter is zero. For each $j$ with $\alpha_j>0$, apply the forward difference operator $\alpha_j$ times using step $h_j=2\rho/\alpha_j$, starting at $\theta_j-\rho$. Other coordinates remain at their central values.
+
+Because the total polynomial degree equals $|\alpha|=d$, this mixed difference annihilates every other monomial and equals
+\begin{equation}
+ c_\alpha\prod_j \alpha_j!h_j^{\alpha_j}.
+\end{equation}
+All evaluation points lie in the parameter box, and the sum of absolute coefficients of the difference operator is $2^d$. Therefore the maximum absolute value of $p$ on this finite grid is at least
+$c_\alpha\rho^d\prod_j\alpha_j!/\alpha_j^{\alpha_j}$.
+This grid maximum is bounded above by the robust risk, proving the first inequality. Finally, the multinomial probability
+$(d!/\prod_j\alpha_j!)\prod_j(\alpha_j/d)^{\alpha_j}$
+is at most one, which gives the second inequality.
+\end{proof}
+The proof permits the same recurrent edge to be traversed repeatedly; treating these traversals as independent perturbations would be incorrect. The bound can be very conservative and decreases rapidly with horizon when $\rho<1$. It is a worst-case existence statement, not a lower bound on average error under randomly sampled perturbations. Its normalization assumes the declared coefficient coordinates and units; arbitrary rescaling changes the perturbation box.
+
+\paragraph{A simple exact cancellation calculation.} In the three-coordinate example, independently perturb the two transfer coefficients and two readout coefficients within radius $\rho\le1$ around $(1,1,1,-1)$. The robust discrepancy of the empty mask is exactly $4\rho$: one product is maximized at $(1+\rho)^2$ and the negative product is made least negative at $-(1-\rho)^2$. This example is much more sensitive than the general $\rho^2$ lower bound.
+

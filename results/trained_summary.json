@@ -1,0 +1,10 @@
+{
+  "seeds": 10,
+  "steps": 1000,
+  "elapsed_seconds": 15.095988943999998,
+  "torch": "2.10.0+cpu",
+  "python": "3.13.5",
+  "threads": 1,
+  "device": "cpu",
+  "status": "empirical held-out validation, not certification"
+}

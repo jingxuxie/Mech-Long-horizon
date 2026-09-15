@@ -1,0 +1,7 @@
+delay,initial_information_bound,persistent_minimum,failure_time_source_only,irrelevant_units_removed
+1,1,2,1,2
+2,1,3,2,2
+4,1,5,4,2
+8,1,9,8,2
+16,1,17,16,2
+32,1,33,32,2

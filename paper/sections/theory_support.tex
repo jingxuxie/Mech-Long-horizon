@@ -1,0 +1,82 @@
+\section{Information preservation is not persistent execution}
+For general deterministic systems, let an explanation initialize from $\phi(x)$ and receive the same subsequent transition labels. Say that two admissible initial states are $2\eps$-distinguishable through $H$ if some common allowed continuation of length at most $H$ produces outputs separated by more than $2\eps$.
+
+\begin{proposition}[Initial-state obstruction]\label{prop:information}
+A deterministic explanation uniformly faithful to tolerance $\eps$ through $H$ cannot map a $2\eps$-distinguishable pair to the same initial explanation state.
+\end{proposition}
+\begin{proof}
+If the explanation starts in the same state and receives the same labels, its output at the distinguishing time is identical in the two cases. If it is within $\eps$ of each original output, the triangle inequality bounds their separation by $2\eps$, a contradiction.
+\end{proof}
+For coordinate projections, each distinguishable pair requires retaining at least one coordinate on which it differs. Such constraints provide an information lower bound, but do not guarantee the reduced dynamics transport the retained information correctly.
+
+\begin{theorem}[Arbitrarily loose initial-information bound]\label{thm:relay}
+For every integer $L\ge1$, there is a nonnegative linear recurrent system for which the initial-state distinguishability lower bound at horizon $L$ is one coordinate, while the minimum exact persistent mask has size $L+1$. At every horizon $H<L$, the empty mask is exact.
+\end{theorem}
+\begin{proof}
+Use coordinates $0,\ldots,L$, initial state $x_0=b e_0$ with $b\in[0,1]$, transitions $x'_{i+1}=x_i$ and $x'_0=0$, and output $y=x_L$. The only differing coordinate between admissible initial states is coordinate zero; retaining it distinguishes all different initial bits. All outputs before time $L$ vanish. At time $L$, the original output equals $b$. Under persistent masking it equals $b\prod_{i=0}^L\one_{i\in K}$. Consequently every coordinate is necessary at horizon $L$, and retaining them all is sufficient.
+\end{proof}
+The theorem compares a necessary initial-information bound with a persistent subcircuit cost. It does \emph{not} claim a one-coordinate autonomous replacement can implement a delay for free; an unrestricted replacement may need a clock or other state. Independent chains with delays $d_1,\ldots,d_m$ and separate readouts immediately give
+\begin{equation}
+ k^*(H,0)=\sum_{j:d_j\le H}(d_j+1).
+ \label{eq:chains}
+\end{equation}
+Unreachable or unobservable extra coordinates do not enter the sum.
+
+\begin{figure}[t]
+\centering\includegraphics[width=.77\linewidth]{figures/relay.pdf}
+\caption{Initial information and persistent execution are different constraints. A delay-$L$ chain needs only one initial coordinate to distinguish its inputs, but every one of its $L+1$ recurrent coordinates must survive a persistent mask. Two added dead coordinates are safely removed in every case.}
+\label{fig:relay}
+\end{figure}
+
+\section{Exact temporal support certificates}
+Assume in this section that every $A_a$ and $C$ is entrywise nonnegative. Build a directed product graph with vertices $(i,q)\in[n]\times Q$. Include an edge
+\begin{equation}
+ (j,q)\xrightarrow{a}(i,\delta(q,a))
+ \quad\Longleftrightarrow\quad (A_a)_{ij}>0\ \text{and }\delta(q,a)\text{ is defined}.
+\end{equation}
+Roots are $(s,q_0)$ for $s\in U$. Output vertices are $(i,q)$ for which $C_{oi}>0$ for at least one output $o$. Let $d_{\mathrm{in}}(i,q)$ be the shortest distance from a root and $d_{\mathrm{out}}(i,q)$ the shortest distance to any output vertex. Missing paths have infinite distance. Define
+\begin{equation}
+ b(i)=\min_{q\in Q}\{d_{\mathrm{in}}(i,q)+d_{\mathrm{out}}(i,q)\},
+ \qquad \live_H=\{i:b(i)\le H\}.
+ \label{eq:birth}
+\end{equation}
+A walk may revisit a state coordinate. The protocol state in the minimization ensures that the prefix and suffix can be concatenated legally.
+
+\begin{theorem}[Horizon-dependent exact mask]\label{thm:support}
+For a nonnegative system, $\risk_H(K)=0$ if and only if $\live_H\subseteq K$. In particular, $\live_H$ is the unique inclusion-minimal and unique cardinality-minimal exact mask, and $k^*(H,0)=|\live_H|$.
+\end{theorem}
+\begin{proof}
+Fix a word $w=a_0\cdots a_{t-1}$ and a source basis vector $e_s$. Expanding $CA_{a_{t-1}}\cdots A_{a_0}e_s$ expresses each output as a sum over labeled walks of length $t$, with weight equal to the product of its transition coefficients and terminal readout coefficient. The masked execution retains exactly the walks whose every visited coordinate is in $K$, including the initial and final coordinates. Every lost walk contributes a nonnegative amount.
+
+If $K$ contains $\live_H$, no permitted source-to-output walk of length at most $H$ is lost, proving sufficiency. Conversely, if $i\in\live_H\setminus K$, shortest prefix and suffix paths through a minimizing $(i,q)$ concatenate to an allowed source-to-output walk of length at most $H$. Every coefficient on this walk is strictly positive. Evaluating its source basis vector produces a strictly positive lost contribution to at least one output, which no other lost contribution can cancel. Thus the mask is not exact.
+\end{proof}
+
+\begin{corollary}[First failure, all horizons, and complexity]\label{cor:time}
+Let $\tau(K)=\min_{i\notin K}b(i)$, with an empty minimum equal to infinity. If finite, $\tau(K)$ is the earliest possible failure time and a source basis vector and allowed word of that length witness failure. Otherwise the mask is exact at every finite horizon. Two breadth-first searches compute all births in $O(|V_\times|+|E_\times|)$ time and space after the product graph is built.
+\end{corollary}
+\begin{proof}
+Before $\tau(K)$ every permitted source-to-output walk avoids omitted coordinates, so Theorem~\ref{thm:support} implies equality. Concatenating the shortest paths through an omitted coordinate attaining the minimum yields a positive lost walk at time $\tau(K)$. A forward search from roots and reverse search from output vertices compute the two distance arrays. Their parent records reconstruct the word and coordinate walk.
+\end{proof}
+A dense matrix input additionally costs $O(|\mathcal A|n^2)$ to inspect. Repeating the support of each mode across protocol transitions costs the corresponding product-edge construction time. The graph searches do not enumerate all allowed words or depend on a numeric horizon bound. These are white-box computations; comparisons to random testing must account for access to the transition graph.
+
+\paragraph{A necessary protocol control.} Consider one chain requiring the mode word $010$ and another requiring $11$. Unrestricted switching requires retaining both chains once the horizon reaches three. Under a protocol forbidding consecutive ones, the second chain is unreachable from its initialized source and contributes nothing at any time. Ignoring protocol states in the graph would retain its components unnecessarily.
+
+\begin{figure}[t]
+\centering\includegraphics[width=.79\linewidth]{figures/horizon.pdf}
+\caption{Exact minimum sizes from exhaustive enumeration agree with the support theorem. Independent chains have delays 1, 2, and 3. The gated systems have chains requiring $010$ and $11$; the no-$11$ protocol removes the latter chain from the faithful explanation at every horizon.}
+\label{fig:horizon}
+\end{figure}
+
+\subsection{Nonzero tolerance and a warning about greedy selection}
+For a nonnegative system, $x_t-z_t\ge0$ coordinatewise. The largest box-input discrepancy for every fixed word, time and output is attained by setting all source coordinates to one. Therefore numeric finite-horizon risk can be evaluated by word enumeration without enumerating the initial-state box. This observation gives an exact arithmetic oracle for the small integer systems in our experiments. Floating-point evaluations are not outward-rounded formal certificates.
+
+\begin{proposition}[Average deletion loss is coverage, but worst-case loss need not be]\label{prop:coverage}
+For fixed nonnegative parameters, any nonnegative weighted sum of scalar lost outputs over finitely many words, times and nonnegative initial states is a monotone submodular function of the deleted set $D=[n]\setminus K$. The worst-case discrepancy in Equation~\eqref{eq:risk} need not be submodular in $D$.
+\end{proposition}
+\begin{proof}
+A path of weight $w\ge0$ contributes $w\one\{D\cap V(\text{path})\ne\varnothing\}$ to the lost output. This weighted coverage term is monotone and submodular; summing preserves both properties. For the second claim, take a horizon-zero system with three source coordinates and readout rows $(3/2,0,0)$ and $(0,1,1)$. Its risk is
+$\max\{(3/2)\one_{a\in D},\one_{b\in D}+\one_{c\in D}\}$.
+Adding $c$ to $\{a\}$ changes risk by zero, while adding it to $\{a,b\}$ changes risk by $1/2$, violating diminishing returns.
+\end{proof}
+Thus the exact zero-error characterization does not by itself solve minimum-size extraction at an arbitrary tolerance. In particular, a guarantee for an average path-loss objective cannot be silently transferred to the worst-case objective.
+

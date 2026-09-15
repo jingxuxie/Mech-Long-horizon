@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.venv/
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.toc
+paper/*.bbl
+paper/*.blg
+
+# Regenerated binary artifacts and learned checkpoints (included in source archive)
+paper/main.pdf
+paper/figures/
+results/rnn_seed*.json

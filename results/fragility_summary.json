@@ -1,0 +1,7 @@
+{
+  "rational_cases": 12,
+  "mixed_difference_disagreements": 0,
+  "lower_bound_violations": 0,
+  "parameter_tying": "same recurrent coefficient reused across time",
+  "floating_cancellation_draws": 5000
+}

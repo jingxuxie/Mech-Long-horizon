@@ -1,0 +1,20 @@
+\section{Related work and novelty boundaries}
+Causal abstraction provides a language for faithful high-level simplifications and intervention mappings \citep{geiger2025}. Our persistent coordinate masks are a restricted executable family within that broader agenda. Approximate simulation and bisimulation already provide transition-closure certificates \citep{girard2011}; the generic pair auditor and Proposition~\ref{prop:closure} are reference applications of that theory.
+
+Neural program slicing already traces dependencies through network computation \citep{zhang2020}. The support construction is a protocol-constrained temporal slice. Its specialized result is an exact minimum characterization under nonnegativity and persistent masking, with component-specific birth horizons and shortest failure words. This relationship to slicing should be treated as a central novelty comparison, not buried as incidental background.
+
+Positive exact model reduction studies more general state-space reductions and positivity-preserving maps \citep{cortese2025}. Our lower bounds concern coordinate deletion without refitting; they do not imply lower bounds on minimal realizations or arbitrary abstractions. Formal circuit discovery already studies input robustness, patching robustness and multiple minimality notions \citep{hadad2026}. Our distinct axes are recurrent horizon, admissible mode sequences, and repeated application of the same mask. We do not claim the first circuit certificate or the first minimality guarantee.
+
+Recurrent circuit discovery already uses windowed causal interventions and local linearization \citep{balwani}. The accessible workshop abstract establishes this methodological overlap, but the full manuscript was blocked during the literature audit; a complete comparison remains necessary. Structural-system work uses genericity and perturbation arguments \citep{zhang2021}. Our signed-mask statement concerns polynomial equality of a model and its own persistent subcircuit under shared coefficient changes, not controllability of the original system.
+
+\section{Limitations and next research steps}
+The strongest exact result assumes linear transitions and a nonnegative coefficient structure. In dense signed networks the robust zero-error core can contain every coordinate, making exact robustness too strict for useful compression. The finite-radius lower bound can be exponentially small and does not yet yield a practical approximate-mask optimizer. The initial-state set, intervention ordering, readout and ablation baseline are part of the theorem; changing any of them requires a new audit. In particular, nonlinear replacements, SAE features, and teacher-forced explanations are not silently included.
+
+The learned study is small and synthetic, and its signed nonlinear networks are outside the exact support theorem. Different windows use different compute and information. Additional tasks, tolerance sweeps, a matched-budget study, and direct comparison with published recurrent methods are needed for a stronger empirical claim. The mathematical novelty should be independently checked against temporal slicing and structured-system results. A promising next target is a nonvacuous finite-tolerance certificate that retains the direction- and protocol-sensitive structure of the exact result without requiring the entire dense circuit.
+
+\section{Conclusion}
+A short-window circuit is a scoped temporal claim, not automatically an explanation of an indefinitely running computation. For a tractable recurrent class, we derive the exact retained coordinates required at each horizon and produce the earliest allowed failure witness for any smaller mask. Initial information bounds can miss arbitrarily many necessary relays, while signed cancellations introduce a separate distinction between nominal and parameter-robust faithfulness. These results motivate reporting a circuit together with its execution convention, admissible protocol, validity horizon, and the precise status of its audit.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+\clearpage

@@ -1,0 +1,73 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools,booktabs,graphicx}
+\usepackage[round]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\setlist{nosep}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\newcommand{\R}{\mathbb R}
+\newcommand{\N}{\mathbb N}
+\newcommand{\supp}{\operatorname{supp}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\risk}{\mathcal R}
+\newcommand{\live}{\mathcal L}
+\newcommand{\one}{\mathbf 1}
+\newcommand{\eps}{\varepsilon}
+\title{How Long Is a Circuit Faithful?\\Temporal Scope, Relay Costs, and Fragile Cancellations}
+\author{Anonymous working draft}
+\date{September 15, 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+Finite-window agreement does not specify the temporal scope of a mechanistic explanation. We study executable recurrent explanations formed by persistently zero-masking state coordinates, with faithfulness measured over every prefix of an allowed input or intervention protocol. For nonnegative switched linear systems, we characterize the unique minimum faithful mask through each horizon by source-to-output walks in a protocol-product graph. Two graph searches recover all component birth horizons and shortest failure witnesses. A delay-chain construction separates the initial information required by an explanation from the recurrent relays required by a persistent subcircuit, with an arbitrarily large gap. For signed systems, we show that smaller cancellation-dependent exact masks are nongeneric under independent coefficient perturbations, and derive an explicit finite-radius lower bound using mixed finite differences. Exact enumeration checks 12,192 mask--horizon cases; rational arithmetic checks the perturbation bound with recurrently reused parameters. In ten trained 16-unit tanh RNNs, short-window selection exceeds its output tolerance at later held-out steps in six seeds, whereas longer-window selection does not in these tests. These empirical observations are not nonlinear certificates. The results separate information preservation, persistent execution, and parameter robustness, making the temporal scope of a circuit claim explicit.
+\end{abstract}
+
+\paragraph{Draft status.} This version contains completed derivations, runnable experiments, and reported measurements. The proofs have been checked by the authoring assistant and computational consistency tests, not by an independent reviewer or proof assistant. The novelty comparison remains provisional; this is not a claim of submission readiness. The learned-network study is a controlled illustration, not a state-of-the-art method comparison.
+
+\section{Introduction}
+Mechanistic interpretation seeks executable simplifications of an existing computation, rather than merely predictors of the same task \citep{geiger2025}. For a recurrent computation, the distinction has a temporal dimension: an omitted state component can be irrelevant to the current output while carrying information needed by a later output. A mask can also remain valid under ordinary inputs but fail when an allowed intervention changes which internal states are reached. Thus the statement ``this circuit is faithful'' needs a horizon and a protocol, in addition to a behavioral discrepancy and an ablation convention.
+
+The importance of a specified ablation convention is already well established \citep{miller2024}. Temporal recurrent circuit discovery also already uses windowed ablations and trajectory linearization \citep{balwani}. Neither the existence of delayed effects nor the suggestion to evaluate longer rollouts is the contribution of this work. We instead ask for a computable relationship between the temporal scope of a claim and the state components that a persistent executable explanation must retain.
+
+We focus on an intentionally restricted explanation class. A circuit retains a subset of recurrent coordinates, sets all others to zero after \emph{every} transition, and receives no hidden-state refresh from the original network. This distinguishes persistent execution from teacher-forced local tests. It also distinguishes subcircuit extraction from unrestricted model reduction: the latter may replace the original state coordinates and dynamics with a different realization \citep{cortese2025}.
+
+Our central objects are the \emph{birth horizon} of a component and the minimum retained size at a requested horizon. In a nonnegative switched linear system, a component is required precisely when a permitted source-to-output walk through that component fits within the horizon. A protocol automaton is essential: a walk that uses an impossible sequence of gates does not justify retaining its components. The resulting support algorithm provides a complete zero-error answer in this class rather than a sampling-based estimate.
+
+Two further results identify limitations of tempting shortcuts. First, initial-state distinguishability need not account for recurrent relays: a single stored bit can require an arbitrarily long chain of retained coordinates. Second, signed cancellations can make a smaller mask faithful at a particular parameter setting, but this reduction is not generically preserved when the nonzero coefficients vary independently. We quantify the latter statement rather than relying only on a measure-zero argument.
+
+\paragraph{Contributions and scope.} We develop (i) a horizon/protocol characterization and shortest-witness auditor for persistent nonnegative masks, (ii) a separation between initial information lower bounds and persistent relay cost, and (iii) a robust signed-mask characterization with a finite-radius error obstruction. Exact finite-state and integer experiments verify the implementations; a small signed-RNN experiment tests whether temporal failures occur after learning. Graph reachability, simulation relations, and polynomial nonvanishing are established tools. The intended contribution is their specialized characterization of temporal mask claims, not a new general verification paradigm.
+
+\section{Problem and intervention semantics}
+Let $\mathcal A$ be a finite alphabet of transition modes. A deterministic partial automaton $(Q,q_0,\delta)$ specifies the permitted prefixes: a word is allowed if each successive transition of $\delta$ is defined. Every reachable protocol state accepts stopping. The protocol is exogenous and is not part of the prunable circuit. A symbol can represent an input-controlled gate or a specified linear internal intervention; an arbitrary nonlinear edit is not automatically covered.
+
+For now consider
+\begin{equation}
+ x_0=S\xi,\qquad x_{t+1}=A_{a_t}x_t,\qquad y_t=Cx_t,
+ \label{eq:system}
+\end{equation}
+where $S$ selects a set $U\subseteq[n]$ of source coordinates, $\xi\in[0,1]^{|U|}$, and $C\in\R^{p\times n}$. All nonsource coordinates initially equal zero. The use of a source set matters: declaring every hidden state admissible yields a different audit.
+
+A persistent coordinate mask $K\subseteq[n]$ has projection $P_K=\diag(\one_{i\in K})$ and execution
+\begin{equation}
+ z_0=P_KS\xi,\qquad z_{t+1}=P_K A_{a_t}z_t,\qquad \hat y_t=Cz_t.
+ \label{eq:mask}
+\end{equation}
+The same transition word and coefficient values are used by both systems. No omitted activations are supplied from $x_t$ to $z_t$. The original weights are not retrained after extracting the mask.
+
+\begin{definition}[Prefix faithfulness and size]
+For a nonnegative integer $H$, define
+\begin{equation}
+ \risk_H(K)=\max_{\substack{0\le t\le H\\w\text{ allowed},\ |w|=t}}
+ \sup_{\xi\in[0,1]^{|U|}}\|C x_t(w,\xi)-Cz_t(w,\xi)\|_\infty.
+ \label{eq:risk}
+\end{equation}
+The minimum size is $k^*(H,\eps)=\min\{|K|:\risk_H(K)\le\eps\}$. The validity horizon is $H_\eps(K)=\sup\{H\ge0:\risk_H(K)\le\eps\}$, with value $-1$ when this set is empty.
+\end{definition}
+The maximum is over prefixes rather than only the last output, so a transient failure cannot be hidden by later recovery. As the protocol or horizon expands the requirement strengthens. The result certifies a scoped behavior of a declared executable explanation; it does not identify a unique semantic algorithm among all possible representations.
+
